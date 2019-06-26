@@ -19,13 +19,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-# from tensorflow.contrib.util import loader
 import tensorflow as tf
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
-# from tensorflow.python.platform import resource_loader
 from tensorflow.python.framework import ops
 
-gelu_ = tf.load_op_library(
+_gelu_op_so = tf.load_op_library(
     get_path_to_datafile('custom_ops/gelu/_gelu_ops.so'))
     
 @ops.RegisterGradient("Gelu")
@@ -40,12 +38,4 @@ def _gelu_grad(op, grad):
   Returns:
     Gradients with respect to the input of `gelu`.
   """
-  return [gelu_.gelu_grad(grad, op.inputs[0])]  # List of one Tensor, since we have one input
-
-# go/tf-wildcard-import
-#from tensorflow.python.util.tf_export import tf_export
-
-#@tf_export('user_ops.my_fact')
-#def my_fact():
-#  """Example of overriding the generated code for an Op."""
-#  return _gen_user_ops.fact()
+  return [_gelu_op_so.gelu_grad(grad, op.inputs[0])]  # List of one Tensor, since we have one input

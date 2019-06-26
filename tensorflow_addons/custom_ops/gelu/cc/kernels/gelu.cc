@@ -13,7 +13,6 @@ limitations under the License.
 #include "tensorflow/core/framework/register_types.h"
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/framework/tensor_shape.h"
-// #include "tensorflow/core/kernels/bounds_check.h"
 #include "tensorflow/core/lib/core/status.h"
 #include "tensorflow/core/lib/strings/str_util.h"
 #include "tensorflow/core/platform/logging.h"
@@ -94,15 +93,15 @@ class GeluGradOp : public tensorflow::OpKernel {
     auto sqrt2overPI = sqrt(2/M_PI);
     // TODO: investigate if we can optimize using other TF ops or using MKLDNN or Eigen
     for (int i = 0; i < N; i++) {
-      auto dLdy = grad_input(i);
+      auto dL_dy = grad_input(i);
       auto x = input(i);
 
       auto tanhterm = tanh(sqrt2overPI * (x + 0.04715*pow(x,3)));
-      auto dydx = 0.5 * (1 + tanhterm)
+      auto dy_dx = 0.5 * (1 + tanhterm)
                   + 0.5 * x * (1 - pow(tanhterm,2)) * sqrt2overPI * (1 + 3 * 0.04715 * pow(x,2));
-      auto dLdx = dLdy * dydx;
+      auto dL_dx = dL_dy * dy_dx;
 
-      grad_output_flat(i) = dLdx;
+      grad_output_flat(i) = dL_dx;
     }
   }
 };

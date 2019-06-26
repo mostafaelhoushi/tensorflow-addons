@@ -13,15 +13,12 @@
 # limitations under the License.
 # ==============================================================================
 import tensorflow as tf
-# from tensorflow_addons.gelu import gelu
-#import tensorflow_addons
 import numpy as np
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 _gelu_op_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/gelu/_gelu_ops.so"))
 gelu = _gelu_op_so.gelu
-
 
 # reference function to compare against
 # source: https://github.com/google-research/bert/blob/bee6030e31e42a9394ac567da170a89a98d2062f/modeling.py#L264
