@@ -19,5 +19,6 @@ py_library(
         "//tensorflow_addons/rnn",
         "//tensorflow_addons/seq2seq",
         "//tensorflow_addons/text",
+        "//tensorflow_addons/gelu",
     ],
 )

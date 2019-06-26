@@ -81,5 +81,6 @@ from tensorflow_addons import optimizers
 from tensorflow_addons import rnn
 from tensorflow_addons import seq2seq
 from tensorflow_addons import text
+from tensorflow_addons import gelu
 
 from tensorflow_addons.version import __version__
