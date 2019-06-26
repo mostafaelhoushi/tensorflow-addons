@@ -17,7 +17,7 @@ import numpy as np
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 _gelu_op_so = tf.load_op_library(
-    get_path_to_datafile("custom_ops/gelu/_gelu_ops.so"))
+    get_path_to_datafile("custom_ops/text/_gelu_op.so"))
 gelu = _gelu_op_so.gelu
 
 # reference function to compare against
