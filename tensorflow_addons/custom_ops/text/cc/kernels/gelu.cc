@@ -81,6 +81,10 @@ class GeluGradOp : public tensorflow::OpKernel {
     const Tensor& input_tensor = context->input(1);
     auto input = input_tensor.flat<T>();
 
+     // Grab the gelu output tensor
+    const Tensor& output_tensor = context->input(2);
+    auto output = output_tensor.flat<T>();
+
     // Create an output tensor
     Tensor* grad_output_tensor = NULL;
     OP_REQUIRES_OK(context, context->allocate_output(0, grad_input_tensor.shape(),
@@ -95,10 +99,10 @@ class GeluGradOp : public tensorflow::OpKernel {
     for (int i = 0; i < N; i++) {
       auto dL_dy = grad_input(i);
       auto x = input(i);
+       auto gelu_x = output(i) / x;
 
       auto tanhterm = tanh(sqrt2overPI * (x + 0.04715*pow(x,3)));
-      auto dy_dx = 0.5 * (1 + tanhterm)
-                  + 0.5 * x * (1 - pow(tanhterm,2)) * sqrt2overPI * (1 + 3 * 0.04715 * pow(x,2));
+      auto dy_dx = gelu_x + 0.5 * x * (1 - pow(tanhterm,2)) * sqrt2overPI * (1 + 3 * 0.04715 * pow(x,2));
       auto dL_dx = dL_dy * dy_dx;
 
       grad_output_flat(i) = dL_dx;

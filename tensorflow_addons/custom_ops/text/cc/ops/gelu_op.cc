@@ -22,13 +22,14 @@ namespace tensorflow {
 REGISTER_OP("Gelu")
     .Input("features: T")
     .Output("activations: T")
-    .Attr("T: {realnumbertype, qint8}")
+    .Attr("T: realnumbertype")
     .SetShapeFn(tensorflow::shape_inference::UnchangedShape);
 
 
 REGISTER_OP("GeluGrad")
     .Input("gradients: T")
     .Input("features: T")
+    .Input("activations: T")
     .Output("backprops: T")
     .Attr("T: realnumbertype")
     .SetShapeFn(tensorflow::shape_inference::MergeBothInputsShapeFn);
