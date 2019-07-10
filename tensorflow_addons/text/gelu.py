@@ -38,4 +38,4 @@ def _gelu_grad(op, grad):
   Returns:
     Gradients with respect to the input of `gelu`.
   """
-  return [bert_ops.gelu_grad(grad, op.inputs[0], op.outputs[0])]  # List of one Tensor, since we have one input
+  return [_gelu_op_so.gelu_grad(grad, op.inputs[0], op.outputs[0])]  # List of one Tensor, since we have one input
