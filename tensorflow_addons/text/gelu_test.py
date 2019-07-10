@@ -13,8 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 import tensorflow as tf
-import numpy as np
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+import numpy as np
 
 _gelu_op_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/text/_gelu_op.so"))
@@ -36,27 +36,35 @@ def gelu_ref(x):
   return x * cdf
 
 class GeluTest(tf.test.TestCase):
-  def testGelu(self):
+  def testGelu(self, dtype=tf.float32):
     # create array with random dimensions and random values
     N, H, W, C = np.random.randint(1, 128), np.random.randint(1, 224), np.random.randint(1, 224), np.random.randint(1, 3)
-    x = tf.constant(np.random.randn(N, H, W, C), dtype=tf.float32)
+    x = tf.constant(np.random.randn(N, H, W, C), dtype=dtype)
 
     with self.test_session():
         # run both versions of gelu
-        y = gelu(x) # bert_ops.gelu(..) is implemented as a custom op in C++
+        y = gelu(x) # implemented as a custom op in C++
         y_ref = gelu_ref(x)
 
         self.assertAllClose(y, y_ref)
 
-  def testGeluGrad(self):
-    x = tf.ones((2, 2))
+  def testGelu_float16(self):
+    return self.testGelu(dtype=tf.float16)
+
+  def testGelu_float32(self):
+    return self.testGelu(dtype=tf.float32)
+
+  def testGelu_float64(self):
+    return self.testGelu(dtype=tf.float64)
+
+  def testGeluGrad(self, dtype=tf.float32):
 
     # create array with random dimensions and random values
     N, H, W, C = np.random.randint(1, 128), np.random.randint(1, 224), np.random.randint(1, 224), np.random.randint(1, 3)
-    dL_dy = tf.constant(np.random.randn(N, H, W, C), dtype=tf.float32)
-    x = tf.constant(np.random.randn(N, H, W, C), dtype=tf.float32)
+    dL_dy = tf.constant(np.random.randn(N, H, W, C), dtype=dtype)
+    x = tf.constant(np.random.randn(N, H, W, C), dtype=dtype)
 
-    with self.test_session(): #with tf.Session() as sess:
+    with self.test_session():
         dy_dx = None
         dy_ref_dx = None
         with tf.GradientTape() as t:
@@ -72,8 +80,17 @@ class GeluTest(tf.test.TestCase):
 
             # Derivative of y with respect to the original input tensor x
             dy_ref_dx = t.gradient(y_ref, x)
-        
+
         self.assertAllClose(dy_dx, dy_ref_dx, atol=1e-02)
+
+  def testGeluGrad_float16(self):
+    return self.testGeluGrad(dtype=tf.float16)
+
+  def testGeluGrad_float32(self):
+    return self.testGeluGrad(dtype=tf.float32)
+
+  def testGeluGrad_float64(self):
+    return self.testGeluGrad(dtype=tf.float64)
 
 
 if __name__ == "__main__":

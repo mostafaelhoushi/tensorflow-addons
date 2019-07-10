@@ -39,19 +39,25 @@ class GeluOp : public tensorflow::OpKernel {
 
     // Set the value of each element
     const int N = input.size();
-    auto sqrt2overPI = sqrt(2/M_PI);
+    auto sqrt2overPI = T(sqrt(2/M_PI));
     // TODO: investigate if we can optimize using other TF ops or using MKLDNN or Eigen
     for (int i = 0; i < N; i++) {
       auto x = input(i);
 
-      auto cdf = 0.5 * (1.0 + tanh(
-        sqrt2overPI * (x + 0.044715*pow(x, 3))));
+      auto cdf = T(0.5) * (T(1.0) + tanh(
+        sqrt2overPI * (x + T(0.044715)*pow(x, T(3)))));
       auto y = x * cdf;
 
       output_flat(i) = y;
     }
   }
 };
+
+REGISTER_KERNEL_BUILDER(
+    Name("Gelu")
+    .Device(tensorflow::DEVICE_CPU)
+    .TypeConstraint<Eigen::half>("T"),
+    GeluOp<Eigen::half>);
 
 REGISTER_KERNEL_BUILDER(
     Name("Gelu")
@@ -81,7 +87,7 @@ class GeluGradOp : public tensorflow::OpKernel {
     const Tensor& input_tensor = context->input(1);
     auto input = input_tensor.flat<T>();
 
-     // Grab the gelu output tensor
+    // Grab the gelu output tensor
     const Tensor& output_tensor = context->input(2);
     auto output = output_tensor.flat<T>();
 
@@ -94,21 +100,27 @@ class GeluGradOp : public tensorflow::OpKernel {
 
     // Set the value of each element
     const int N = input.size();
-    auto sqrt2overPI = sqrt(2/M_PI);
+    auto sqrt2overPI = T(sqrt(2/M_PI));
     // TODO: investigate if we can optimize using other TF ops or using MKLDNN or Eigen
     for (int i = 0; i < N; i++) {
       auto dL_dy = grad_input(i);
       auto x = input(i);
-       auto gelu_x = output(i) / x;
+      auto gelu_x = output(i) / x;
 
-      auto tanhterm = tanh(sqrt2overPI * (x + 0.04715*pow(x,3)));
-      auto dy_dx = gelu_x + 0.5 * x * (1 - pow(tanhterm,2)) * sqrt2overPI * (1 + 3 * 0.04715 * pow(x,2));
+      auto tanhterm = tanh(sqrt2overPI * (x + T(0.04715)*pow(x,T(3))));
+      auto dy_dx = gelu_x + T(0.5) * x * (T(1) - pow(tanhterm,T(2))) * sqrt2overPI * (T(1) + T(3) * T(0.04715) * pow(x,T(2)));
       auto dL_dx = dL_dy * dy_dx;
 
       grad_output_flat(i) = dL_dx;
     }
   }
 };
+
+REGISTER_KERNEL_BUILDER(
+    Name("GeluGrad")
+    .Device(tensorflow::DEVICE_CPU)
+    .TypeConstraint<Eigen::half>("T"),
+    GeluGradOp<Eigen::half>);
 
 REGISTER_KERNEL_BUILDER(
     Name("GeluGrad")
